@@ -1,0 +1,6 @@
+PySide6>=6.6
+opencv-python-headless>=4.8,<5
+numpy>=1.24
+Pillow>=10.0
+# необязательно — поддержка RAW (CR2/CR3/NEF/ARW/DNG и др.):
+# rawpy>=0.19

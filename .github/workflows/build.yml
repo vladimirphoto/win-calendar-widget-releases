@@ -1,0 +1,30 @@
+name: build-exe
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['*.md']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - name: Проверка импорта
+        shell: bash
+        run: QT_QPA_PLATFORM=offscreen python -c "import engine, io_utils, app; print('import ok')"
+      - name: Сборка exe
+        run: python -m PyInstaller --noconfirm --onefile --windowed --name "Lumina-Retouch" --collect-data cv2 app.py
+      - name: Публикация релиза
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest dist/Lumina-Retouch.exe --title "Lumina Retouch (сборка ${{ github.run_number }})" --notes "Автосборка из коммита ${GITHUB_SHA::7}"
